@@ -10,6 +10,8 @@ from api.models import conviction
 from api.serializers import convictionSerializer
 import pyodbc
 import urllib
+import urllib.request
+
 # If you are using Python 3+, import urllib instead of urllib2 
 
 #class getCSV(APIView):
@@ -37,32 +39,40 @@ class Predictions(APIView):
             }
         }
 
-    body = str.encode(json.dumps(data))
+        body = str.encode(json.dumps(data))
 
-    url = 'https://ussouthcentral.services.azureml.net/workspaces/eb7dbd082fa9438c92e53da806382135/services/836cbb1cfeed467d81aa1e62242747e7/execute?api-version=2.0&details=true'
-    api_key = "Bearer 2GiJCAZ3uExF1Ag+a+ewmwDVZvgrg2WJpMIvdCbTH+oKEe9BLdq3TpPFF2a/cePApufSIUNhjRB3wHvLig7QDw=="
-    headers = {'Content-Type':'application/json', 'Authorization':('Bearer '+ api_key)}
+        url = 'https://ussouthcentral.services.azureml.net/workspaces/eb7dbd082fa9438c92e53da806382135/services/836cbb1cfeed467d81aa1e62242747e7/execute?api-version=2.0&details=true'
+        api_key = "2GiJCAZ3uExF1Ag+a+ewmwDVZvgrg2WJpMIvdCbTH+oKEe9BLdq3TpPFF2a/cePApufSIUNhjRB3wHvLig7QDw=="
+        headers = {'Content-Type':'application/json', 'Authorization':('Bearer '+ api_key)}
 
-    req = urllib.Request(url, body, headers) 
-    try:
-        response = urllib.urlopen(req)
+        req = urllib.request.Request(url, body, headers) 
+        try:
+            response = urllib.request.urlopen(req)
 
     # If you are using Python 3+, replace urllib2 with urllib.request in the above code:
     # req = urllib.request.Request(url, body, headers) 
     # response = urllib.request.urlopen(req)
 
-        result = response.read()
-        print(result) 
-        return Response({
-            'result':result
+            result = str(response.read().decode(response.headers.get_content_charset()))
+            print(result) 
+            return Response(
+               result
+           )
+        except urllib.request.HTTPError as Eh:
+            return Response({
+                "result2": Eh.code
             })
-    except urllib.HTTPError, error:
-        print("The request failed with status code: " + str(error.code))
+        except  urllib.error:
+            print("The request failed with status code: " )
 
-    # Print the headers - they include the requert ID and the timestamp, which are useful for debugging the failure
-        print(error.info())
+            # Print the headers - they include the requert ID and the timestamp, which are useful for debugging the failure
+            print(str(urllib.error.code))
 
-        print(json.loads(error.read()))   
+            #print(json.loads(urllib.request.HTTPError.read()))  
+            return Response({
+               'result': "error"#str(json.loads(urllib.request.HTTPError.info))
+           }) 
+        
         
 
 
